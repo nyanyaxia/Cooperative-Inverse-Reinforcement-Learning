@@ -1,4 +1,6 @@
 from gridworld import GridWorld
+from maxent_wrapper import Trajectory, Optimizer, Initializer
+from maxent_utils.maxent import irl
 import numpy as np
 from typing import List, Tuple
 
@@ -7,33 +9,52 @@ class RobotLearner:
         self.env = env
         self.estimated_theta = None
         
-    def learn_from_demonstration(self, trajectory: List[Tuple[np.ndarray, str]]):
-        """Implement Maximum Entropy IRL to learn reward parameters"""
-        # Simplified MaxEnt IRL implementation
-        feature_expectations = np.zeros(self.env.n_features)
-        for state, _ in trajectory:
-            feature_expectations += self.env.get_features(state)
-        feature_expectations /= len(trajectory)
+    def learn_from_demonstration(self, trajectory_data: List[Tuple[np.ndarray, str]]):
+        """Implement Maximum Entropy IRL using the maxent package"""
+        # Convert trajectory to maxent package format
+        trajectory = Trajectory(trajectory_data)
+        trajectory.grid_size = self.env.size
         
-        # Initialize theta randomly from prior
-        self.estimated_theta = np.random.uniform(-1, 1, self.env.n_features)
+        # Setup transition probabilities
+        n_states = self.env.size * self.env.size
+        n_actions = 5  # N, S, E, W, NOOP
+        p_transition = np.zeros((n_states, n_states, n_actions))
         
-        # Simple gradient descent to match feature expectations
-        learning_rate = 0.01
-        n_iterations = 100
-        
-        for _ in range(n_iterations):
-            current_features = np.zeros(self.env.n_features)
-            state = self.env.reset()
+        # Fill transition probabilities
+        for s in range(n_states):
+            row, col = s // self.env.size, s % self.env.size
+            state = np.array([row, col])
             
-            for _ in range(len(trajectory)):
-                action = self._policy(state)
-                state = self.env.step(action)
-                current_features += self.env.get_features(state)
-            
-            current_features /= len(trajectory)
-            gradient = feature_expectations - current_features
-            self.estimated_theta += learning_rate * gradient
+            for action, delta in self.env.actions.items():
+                next_state = state + delta
+                next_state = np.clip(next_state, 0, self.env.size - 1)
+                next_s = next_state[0] * self.env.size + next_state[1]
+                p_transition[s, next_s, trajectory._action_to_idx(action)] = 1.0
+        
+        # Setup features matrix
+        features = np.zeros((n_states, self.env.n_features))
+        for s in range(n_states):
+            row, col = s // self.env.size, s % self.env.size
+            state = np.array([row, col])
+            features[s] = self.env.get_features(state)
+        
+        # Define terminal states (none in this case)
+        terminal_states = []
+        
+        # Setup optimization
+        optim = Optimizer(learning_rate=0.01)
+        init = Initializer(low=-1, high=1)
+        
+        # Run MaxEnt IRL
+        self.estimated_theta = irl(
+            p_transition=p_transition,
+            features=features,
+            terminal=terminal_states,
+            trajectories=[trajectory],
+            optim=optim,
+            init=init,
+            eps=1e-4
+        )
     
     def _policy(self, state: np.ndarray) -> str:
         """Robot's policy based on learned rewards"""

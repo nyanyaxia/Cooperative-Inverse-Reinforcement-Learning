@@ -41,7 +41,7 @@ class HumanTeacher:
         return best_action
     
     def _best_response_policy(self, state: np.ndarray) -> str:
-        """Approximate best response policy that explores more"""
+        """A Remplacer !!! Potentiellement dans le fichier best_response.py si c'est gros"""
         # Simple implementation: randomly choose between expert policy and exploration
         if np.random.random() < 0.7:  # 70% follow expert policy
             return self._expert_policy(state)

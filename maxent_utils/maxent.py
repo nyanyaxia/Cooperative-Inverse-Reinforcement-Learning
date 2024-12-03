@@ -117,6 +117,9 @@ def expected_svf_from_policy(p_transition, p_initial, terminal, p_action, eps=1e
 # -- plain maximum entropy (Ziebart et al. 2008) -------------------------------
 
 def local_action_probabilities(p_transition, terminal, reward):
+    print(f'p_transition: {p_transition}')
+    print(f'terminal: {terminal}')
+    print(f'reward: {reward}')
     """
     Compute the local action probabilities (policy) required for the edge
     frequency calculation for maximum entropy reinfocement learning.
@@ -227,6 +230,8 @@ def irl(p_transition, features, terminal, trajectories, optim, init, eps=1e-4, e
     """
     n_states, _, n_actions = p_transition.shape
     _, n_features = features.shape
+    
+    print(f'features {features}')
 
     # compute static properties from trajectories
     e_features = feature_expectation_from_trajectories(features, trajectories)
@@ -243,6 +248,7 @@ def irl(p_transition, features, terminal, trajectories, optim, init, eps=1e-4, e
 
         # compute per-state reward
         reward = features.dot(theta)
+        print(f'reward: {reward}')
 
         # compute the gradient
         e_svf = compute_expected_svf(p_transition, p_initial, terminal, reward, eps_esvf)

@@ -141,17 +141,3 @@ class HumanTeacher:
         return best_response
 
     
-    def _best_response_trajectory(self, trajectory: List[Tuple[np.ndarray, str]]) -> List[Tuple[np.ndarray, str]]:
-        """A Remplacer !!! Potentiellement dans le fichier best_response.py si c'est gros"""
-
-        
-
-env = GridWorld(size=5, n_features=3)
-theta = np.array([1.0, 0.5, -0.2])
-teacher = HumanTeacher(env, theta)
-
-eta = 0.1
-H = 5
-
-best_resp = teacher.best_response(eta, H, theta)
-print("Meilleure réponse :", best_resp)

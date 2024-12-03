@@ -13,8 +13,10 @@ class RobotLearner:
         
     def learn_from_demonstration(self, trajectory_data: List[Tuple[np.ndarray, str]]):
         """Implement Maximum Entropy IRL using the maxent package"""
+        print(f'Robot is learning')
         # Convert trajectory to maxent package format
         trajectory = Trajectory(trajectory_data)
+        print(f'Trajectory: {trajectory.states_actions}')
         trajectory.grid_size = self.env.size
         
         # Setup transition probabilities
@@ -42,6 +44,9 @@ class RobotLearner:
         
         # Define terminal states (none in this case)
         terminal_states = []
+        for center in self.env.feature_centers:
+            center_idx = int(center[0]) * self.env.size + int(center[1])
+            terminal_states.append(center_idx)
         
         # Setup optimization
         optim = Optimizer(learning_rate=0.01)

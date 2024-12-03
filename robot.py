@@ -3,11 +3,13 @@ from maxent_wrapper import Trajectory, Optimizer, Initializer
 from maxent_utils.maxent import irl
 import numpy as np
 from typing import List, Tuple
+from valueiterationplanner import ValueIterationPlanner
 
 class RobotLearner:
     def __init__(self, env: GridWorld):
         self.env = env
         self.estimated_theta = None
+        self.planner = ValueIterationPlanner(env)
         
     def learn_from_demonstration(self, trajectory_data: List[Tuple[np.ndarray, str]]):
         """Implement Maximum Entropy IRL using the maxent package"""
@@ -61,16 +63,4 @@ class RobotLearner:
         if self.estimated_theta is None:
             return np.random.choice(['N', 'S', 'E', 'W'])
             
-        best_action = 'NOOP'
-        best_value = float('-inf')
-        
-        for action in ['N', 'S', 'E', 'W']:
-            next_state = state + self.env.actions[action]
-            next_state = np.clip(next_state, 0, self.env.size - 1)
-            value = self.env.get_reward(next_state, self.estimated_theta)
-            
-            if value > best_value:
-                best_value = value
-                best_action = action
-                
-        return best_action
+        return self.planner.get_action(state, self.estimated_theta)

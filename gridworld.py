@@ -20,11 +20,12 @@ class GridWorld:
         self.feature_centers = np.random.rand(n_features, 2) * size
         
     def get_features(self, state: np.ndarray) -> np.ndarray:
-        """Calculate RBF features for given state"""
         distances = cdist(state.reshape(1, -1), self.feature_centers)
         distances_squared = distances[0]**2
-        sigma = 1.0  # Choose an appropriate value based on your application
-        return np.exp(-distances_squared / (2 * sigma**2))
+        # Normalize by grid size
+        normalized_distances = distances_squared / (self.size ** 2)
+        sigma = 1.0
+        return np.exp(-normalized_distances / (2 * sigma**2))
     
     def get_reward(self, state: np.ndarray, theta: np.ndarray) -> float:
         """Calculate reward for state given parameters theta"""

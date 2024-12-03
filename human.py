@@ -31,6 +31,6 @@ class HumanTeacher:
         """A Remplacer !!! Potentiellement dans le fichier best_response.py si c'est gros"""
         # Simple implementation: randomly choose between expert policy and exploration
         if np.random.random() < 0.7:  # 70% follow expert policy
-            return self._expert_policy(state)
+            return self.planner.get_action(state, self.theta)
         else:  # 30% explore
             return np.random.choice(['N', 'S', 'E', 'W'])

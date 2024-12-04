@@ -2,6 +2,7 @@ from gridworld import GridWorld
 import numpy as np
 from typing import List, Tuple
 from valueiterationplanner import ValueIterationPlanner
+import time
 
 class HumanTeacher:
     def __init__(self, env: GridWorld, theta: np.ndarray, policy_type: str = 'expert'):
@@ -15,15 +16,19 @@ class HumanTeacher:
         trajectory = []
         state = self.env.reset()
         
-        for _ in range(horizon):
-            if self.policy_type == 'expert':
+        print(f"Type of H at at demonstrate : {type(horizon)}, Value of H: {horizon}")
+        
+        if self.policy_type == 'expert':
+            for _ in range(horizon):
+                
                 action = self.planner.get_action(state, self.theta)
-            else:  # best response
-                action = self._best_response_policy(state)
-            
-            trajectory.append((state.copy(), action))
-            state = self.env.step(action)
-            
+                
+                
+                trajectory.append((state.copy(), action))
+                state = self.env.step(action)
+        else :
+            print(f'Calculating best response for horizon {horizon}')
+            trajectory = self._best_response_policy(horizon, eta=0.1)
         return trajectory
     
 
@@ -95,12 +100,12 @@ class HumanTeacher:
                 next_pos = current_pos + move
                 # Vérifie que la position reste dans les limites
                 if np.all(0 <= next_pos) and np.all(next_pos < size):
-                    current_traj.append((next_pos.copy(), action))  # Ajoute le mouvement et l'action
+                    current_traj.append((current_pos.copy(), action))  # Ajoute le mouvement et l'action
                     backtrack(current_traj, next_pos)  # Continue la construction
                     current_traj.pop()  # Annule le dernier mouvement pour explorer d'autres options
 
         # Démarre à partir de la position initiale
-        backtrack([(start_pos.copy(), 'START')], start_pos)
+        backtrack([], start_pos)
 
         return valid_trajectories
     
@@ -125,19 +130,35 @@ class HumanTeacher:
 
     ### best response ####
 
-    def best_response(self, eta: float, H: int, theta: np.ndarray) -> List[Tuple[np.ndarray, str]]:
+    def _best_response_policy(self, H: int,eta: float = 0.1) -> List[Tuple[np.ndarray, str]]:
         """Calcul de la meilleure réponse"""
+        time_start = time.time()
         phi_theta = self.compute_phi_theta(H)
+        print(f'Computing phi_theta took {time.time() - time_start} seconds')
+        
+        time_start = time.time()
         valid_trajectories = self.generate_valid_trajectories(H)
+        print(f'Generating valid trajectories took {time.time() - time_start} seconds')
+        print(f'Number of valid trajectories: {len(valid_trajectories)}')
+        
         best_response = None
         best_value = -np.inf
         
+        count = 0
+        time_start = time.time()
         for tau in valid_trajectories:
+            
             value = self.eval_BR(tau, eta, phi_theta)
+            
+            count += 1
+            if count % 100000 == 0:
+                print('Eval BR count:', count*100/len(valid_trajectories), '%')
+
             if value > best_value:
                 best_value = value
                 best_response = tau
-                
+        
+        print(f'Eval BR for {len(valid_trajectories)} trajectories took {time.time() - time_start} seconds')
         return best_response
 
     

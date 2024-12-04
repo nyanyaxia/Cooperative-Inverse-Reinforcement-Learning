@@ -19,7 +19,6 @@ class ValueIterationPlanner:
     def _get_cached_policy(self, theta_key: tuple):
         """Get cached policy or compute if not available"""
         if theta_key not in self.policy_cache:
-            print(f'Computing values for theta: {theta_key}')
             V = self.compute_values(theta_key)
             self.policy_cache[theta_key] = self.compute_policy(V, theta_key)
         return self.policy_cache[theta_key]
@@ -53,7 +52,6 @@ class ValueIterationPlanner:
                 break
                 
         self.value_cache[theta_key] = V
-        print(f'Values computed for theta: {theta_key} : V is {V}')
         return V
     
     def compute_policy(self, V: Dict[tuple, float], theta_key: tuple) -> Dict[tuple, str]:

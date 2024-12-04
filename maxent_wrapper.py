@@ -10,7 +10,6 @@ class Trajectory:
     def states(self):
         """Return list of state indices"""
         state_indices = [self._state_to_idx(s) for s, _ in self.states_actions]
-        print(f"State indices in trajectory: {state_indices}")
         return state_indices
     
     def transitions(self):
@@ -25,15 +24,12 @@ class Trajectory:
                 self._action_to_idx(action)
             )
             transitions.append(transition)
-            print(f"Transition: state {transition[0]} -> state {transition[1]} via action {transition[2]}")
         return transitions
     
     def _state_to_idx(self, state: np.ndarray) -> int:
         """Convert 2D state to flat index"""
         idx = state[0] * self.grid_size + state[1]
         if not hasattr(self, '_printed_size'):
-            print(f"Grid size: {self.grid_size}")
-            print(f"Example state {state} -> index {idx}")
             self._printed_size = True
         return idx
     
@@ -50,13 +46,9 @@ class Optimizer:
         
     def reset(self, parameters):
         self.parameters = parameters.copy()  # Make copy to avoid reference issues
-        print(f"Initialized parameters: {self.parameters}")
         
     def step(self, gradient):
-        print(f"Gradient: {gradient}")
-        print(f"Parameters before step: {self.parameters}")
         self.parameters += self.learning_rate * gradient
-        print(f"Parameters after step: {self.parameters}")
 
 class Initializer:
     """Uniform random initializer for maxent package"""
@@ -66,5 +58,4 @@ class Initializer:
     
     def __call__(self, n_features):
         params = np.random.uniform(self.low, self.high, n_features)
-        print(f"Initialized {n_features} parameters uniformly between [{self.low}, {self.high}]: {params}")
         return params

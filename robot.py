@@ -13,10 +13,9 @@ class RobotLearner:
         
     def learn_from_demonstration(self, trajectory_data: List[Tuple[np.ndarray, str]]):
         """Implement Maximum Entropy IRL using the maxent package"""
-        print(f'Robot is learning')
         # Convert trajectory to maxent package format
         trajectory = Trajectory(trajectory_data)
-        print(f'Trajectory: {trajectory.states_actions}')
+        print(f'Robot is learning from trajectory: {trajectory.states_actions}')
         trajectory.grid_size = self.env.size
         
         # Setup transition probabilities
@@ -42,7 +41,7 @@ class RobotLearner:
             state = np.array([row, col])
             features[s] = self.env.get_features(state)
         
-        # Define terminal states (none in this case)
+        # Define terminal states
         terminal_states = []
         for center in self.env.feature_centers:
             center_idx = int(center[0]) * self.env.size + int(center[1])
@@ -53,6 +52,7 @@ class RobotLearner:
         init = Initializer(low=-1, high=1)
         
         # Run MaxEnt IRL
+        print(f'Running IRL')
         self.estimated_theta = irl(
             p_transition=p_transition,
             features=features,
@@ -62,6 +62,7 @@ class RobotLearner:
             init=init,
             eps=1e-4
         )
+        print(f'Running finished. Estimated theta: {self.estimated_theta}')
     
     def _policy(self, state: np.ndarray) -> str:
         """Robot's policy based on learned rewards"""

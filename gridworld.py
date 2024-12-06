@@ -5,7 +5,7 @@ from scipy.spatial.distance import cdist
 
 
 class GridWorld:
-    def __init__(self, size: int = 10, n_features: int = 3):
+    def __init__(self, size: int = 8, n_features: int = 3):
         self.size = size
         self.n_features = n_features
         self.state = np.array([size // 2, size // 2])  # Start in middle
@@ -22,10 +22,8 @@ class GridWorld:
     def get_features(self, state: np.ndarray) -> np.ndarray:
         distances = cdist(state.reshape(1, -1), self.feature_centers)
         distances_squared = distances[0]**2
-        # Normalize by grid size
-        normalized_distances = distances_squared / (self.size ** 2)
         sigma = 1.0
-        return np.exp(-normalized_distances / (2 * sigma**2))
+        return np.exp(-distances_squared / (2 * sigma**2))
     
     def get_reward(self, state: np.ndarray, theta: np.ndarray) -> float:
         """Calculate reward for state given parameters theta"""

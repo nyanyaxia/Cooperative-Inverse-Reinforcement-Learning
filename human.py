@@ -16,7 +16,6 @@ class HumanTeacher:
         trajectory = []
         state = self.env.reset()
         
-        print(f"Type of H at at demonstrate : {type(horizon)}, Value of H: {horizon}")
         
         if self.policy_type == 'expert':
             for _ in range(horizon):
@@ -27,7 +26,6 @@ class HumanTeacher:
                 trajectory.append((state.copy(), action))
                 state = self.env.step(action)
         else :
-            print(f'Calculating best response for horizon {horizon}')
             trajectory = self._best_response_policy(horizon, eta=0.1)
         return trajectory
     

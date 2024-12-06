@@ -92,6 +92,7 @@ def expected_svf_from_policy(p_transition, p_initial, terminal, p_action, eps=1e
         `[state: Integer] -> svf: Float`.
     """
     n_states, _, n_actions = p_transition.shape
+    print(f'Calculating expected state visitation frequencies for {n_states} states')
 
     # 'fix' our transition probabilities to allow for convergence
     # we will _never_ leave any terminal state
@@ -106,6 +107,7 @@ def expected_svf_from_policy(p_transition, p_initial, terminal, p_action, eps=1e
 
     delta = np.inf
     while delta > eps:
+        print(f'Iteration, delta: {delta} > eps: {eps}')
         d_ = [p_transition[a].T.dot(p_action[:, a] * d) for a in range(n_actions)]
         d_ = p_initial + np.array(d_).sum(axis=0)
 
@@ -137,7 +139,9 @@ def local_action_probabilities(p_transition, terminal, reward):
         The local action probabilities (policy) as map
         `[state: Integer, action: Integer] -> probability: Float`
     """
+    
     n_states, _, n_actions = p_transition.shape
+    print(f'Calculating local action probabilities for {n_states} states')
 
     er = np.exp(reward)
     p = [np.array(p_transition[:, :, a]) for a in range(n_actions)]
@@ -231,7 +235,9 @@ def irl(p_transition, features, terminal, trajectories, optim, init, eps=1e-4, e
 
     # compute static properties from trajectories
     e_features = feature_expectation_from_trajectories(features, trajectories)
+    print(f'Calculated feature expectation: {e_features}')
     p_initial = initial_probabilities_from_trajectories(n_states, trajectories)
+    print(f'Calculated initial probabilities: {p_initial}')
 
     # basic gradient descent
     theta = init(n_features)
@@ -239,7 +245,13 @@ def irl(p_transition, features, terminal, trajectories, optim, init, eps=1e-4, e
 
     optim.reset(theta)
     
+    iteration = 0
+    
     while delta > eps:
+        print(f'Iteration {iteration}, delta: {delta}')
+        
+        iteration += 1
+        
         theta_old = theta.copy()
 
         # compute per-state reward
@@ -252,6 +264,7 @@ def irl(p_transition, features, terminal, trajectories, optim, init, eps=1e-4, e
         # perform optimization step and compute delta for convergence
         optim.step(grad)
         delta = np.max(np.abs(theta_old - theta))
+            
 
     return theta
 

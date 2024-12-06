@@ -15,19 +15,19 @@ def visualize_policies(env, true_theta, expert_trajectory, robot_expert_theta, b
    for i in range(env.size):
         for j in range(env.size):
             cell_pos = np.array([i, j]) 
-            ground_truth_reward[i, j] = env.get_reward(cell_pos, true_theta)
+            ground_truth_reward[j, i] = env.get_reward(cell_pos, true_theta)
            
    robot_expert_reward = np.zeros((env.size, env.size))
    for i in range(env.size):
         for j in range(env.size):
             cell_pos = np.array([i, j]) 
-            robot_expert_reward[i, j] = env.get_reward(cell_pos, robot_expert_theta)
+            robot_expert_reward[j, i] = env.get_reward(cell_pos, robot_expert_theta)
             
    robot_br_reward = np.zeros((env.size, env.size))
    for i in range(env.size):
         for j in range(env.size):
             cell_pos = np.array([i, j]) 
-            robot_br_reward[i, j] = env.get_reward(cell_pos, robot_br_theta)
+            robot_br_reward[j, i] = env.get_reward(cell_pos, robot_br_theta)
            
    # Ground truth reward
    plt.subplot(131)
@@ -53,7 +53,7 @@ def visualize_policies(env, true_theta, expert_trajectory, robot_expert_theta, b
    plt.tight_layout()
    plt.show()
 
-def run_experiment(n_trials: int = 4, grid_size: int = 8, horizon: int = 16):
+def run_experiment(n_trials: int = 4, grid_size: int = 10, horizon: int = 16):
     """Run the complete experiment"""
     results = {
         'expert_3': {'l2_norms': [], 'feature_counts': []},

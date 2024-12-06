@@ -1,6 +1,7 @@
 from gridworld import GridWorld
-from maxent_wrapper import Trajectory, Optimizer, Initializer
+from maxent_wrapper import Trajectory
 from maxent_utils.maxent import irl
+from maxent_wrapper import Optimizer, Initializer
 import numpy as np
 from typing import List, Tuple
 from valueiterationplanner import ValueIterationPlanner
@@ -18,30 +19,11 @@ class RobotLearner:
         print(f'Robot is learning from trajectory: {trajectory.states_actions}')
         trajectory.grid_size = self.env.size
         
-        # Setup transition probabilities
-        n_states = self.env.size * self.env.size
-        n_actions = 5  # N, S, E, W, NOOP
-        p_transition = np.zeros((n_states, n_states, n_actions))
-        
-        # Fill transition probabilities
-        for s in range(n_states):
-            row, col = s // self.env.size, s % self.env.size
-            state = np.array([row, col])
-            
-            for action, delta in self.env.actions.items():
-                next_state = state + delta
-                next_state = np.clip(next_state, 0, self.env.size - 1)
-                next_s = next_state[0] * self.env.size + next_state[1]
-                p_transition[s, next_s, trajectory._action_to_idx(action)] = 1.0
-        
+        p_transition = self.env.get_p_transition()
         # Setup features matrix
-        features = np.zeros((n_states, self.env.n_features))
-        for s in range(n_states):
-            row, col = s // self.env.size, s % self.env.size
-            state = np.array([row, col])
-            features[s] = self.env.get_features(state)
+        features = self.env.get_feature_matrix()
         
-        # Define terminal states
+        # Define terminal states (none in this case)
         terminal_states = []
         for center in self.env.feature_centers:
             center_idx = int(center[0]) * self.env.size + int(center[1])
@@ -60,7 +42,8 @@ class RobotLearner:
             trajectories=[trajectory],
             optim=optim,
             init=init,
-            eps=1e-4
+            eps=1e-4,
+            eps_esvf=1e-4,
         )
         print(f'Running finished. Estimated theta: {self.estimated_theta}')
     

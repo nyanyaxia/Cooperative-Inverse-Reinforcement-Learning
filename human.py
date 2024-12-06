@@ -26,7 +26,7 @@ class HumanTeacher:
                 trajectory.append((state.copy(), action))
                 state = self.env.step(action)
         else :
-            trajectory = self._best_response_policy(horizon, eta=0.1)
+            trajectory = self._best_response_policy(horizon, eta=0.5)
         return trajectory
     
 
@@ -128,7 +128,7 @@ class HumanTeacher:
 
     ### best response ####
 
-    def _best_response_policy(self, H: int,eta: float = 0.1) -> List[Tuple[np.ndarray, str]]:
+    def _best_response_policy(self, H: int,eta: float = 0.5) -> List[Tuple[np.ndarray, str]]:
         """Calcul de la meilleure réponse"""
         time_start = time.time()
         phi_theta = self.compute_phi_theta(H)

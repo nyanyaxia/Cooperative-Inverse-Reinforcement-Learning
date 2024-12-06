@@ -32,7 +32,7 @@ def visualize_policies(env, true_theta, expert_trajectory, robot_expert_theta, b
    # Ground truth reward
    plt.subplot(131)
    plt.imshow(ground_truth_reward, cmap='gray')
-   plt.scatter(centers[:, 1], centers[:, 0], c='r', marker='x', s=100)
+   plt.scatter(centers[:, 0], centers[:, 1], c='r', marker='x', s=100)
    plt.title('Ground truth reward')
    
    

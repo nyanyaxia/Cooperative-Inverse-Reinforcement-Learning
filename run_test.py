@@ -177,7 +177,7 @@ def plot_comparison_metrics(results):
     plt.tight_layout()
     return fig
 
-def run_experiment(n_trials: int = 3, grid_size: int = 10, horizon: int = 16):
+def run_experiment(n_trials: int = 10, grid_size: int = 10, horizon: int = 16):
     """Run the complete experiment"""
     results = {
         'expert_3': {'l2_norms': [], 'regret': []},
@@ -198,8 +198,6 @@ def run_experiment(n_trials: int = 3, grid_size: int = 10, horizon: int = 16):
             
             #We use a uniform distribution in [-1, 1] for the prior on theta 
             true_theta = np.random.uniform(-1, 1, n_features)
-            if n_features == 3:
-                true_theta = np.array([1, -1, 1])
             
             # Test both policies
             for policy_type in ['expert', 'best_response']:

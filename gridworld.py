@@ -18,8 +18,6 @@ class GridWorld:
         }
         # Generate random RBF centers as common knowledge
         self.feature_centers = np.random.rand(n_features, 2) * size
-        if n_features == 3:
-            self.feature_centers = np.array([[3, 6], [5, 4], [7,6]])
         
     def get_features(self, state: np.ndarray) -> np.ndarray:
         distances = cdist(state.reshape(1, -1), self.feature_centers)

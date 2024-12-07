@@ -26,7 +26,7 @@ class HumanTeacher:
                 trajectory.append((state.copy(), action))
                 state = self.env.step(action)
         else :
-            trajectory = self._best_response_policy(horizon, eta=0.5)
+            trajectory = self._best_response_policy(horizon, eta=2)
         return trajectory
     
 
@@ -110,25 +110,42 @@ class HumanTeacher:
     def eval_BR(self, tau: List[Tuple[np.ndarray, str]], eta: float, phi_theta: np.ndarray) -> float:
         """fonction coût qui sert à trouver la meilleure réponse"""
         phi_tau = self.feature_count_from_trajectory(tau)
-        return np.dot(self.theta, phi_tau) - eta * np.linalg.norm(phi_tau - phi_theta)
+        sum_of_rewards = np.dot(self.theta, phi_tau)
+        feature_dissimilarity = np.linalg.norm(phi_tau - phi_theta)
+        value = sum_of_rewards - eta * feature_dissimilarity
+        return value, sum_of_rewards, feature_dissimilarity
     
     def compute_phi_theta(self, H: int) -> np.ndarray:
-        """Compute feature count of the best policy"""
-        # Génère une clé unique à partir de theta
-        theta_key = tuple(self.theta.flatten())
+        """Compute expected feature counts by averaging over all possible starting positions"""
+        # Initialize array to store sum of feature counts
+        total_phi = np.zeros(self.env.n_features)
+        count = 0
         
-        # Calcule la politique optimale en passant la clé theta_key
-        best_policy = self.planner.compute_policy(self.planner.compute_values(theta_key), theta_key)
+        # Iterate over all possible starting positions in the grid
+        for i in range(self.env.size):
+            for j in range(self.env.size):
+                # Set starting state
+                start_state = np.array([i, j])
+                
+                # Generate trajectory from this starting position
+                trajectory = self.policy_to_trajectory(
+                    self.env,
+                    self.planner,
+                    self.theta,
+                    start_state,
+                    H
+                )
+                
+                # Add feature counts from this trajectory
+                total_phi += self.feature_count_from_trajectory(trajectory)
+                count += 1
         
-        # Génère une trajectoire à partir de la politique optimale
-        best_trajectory = self.policy_to_trajectory(self.env, self.planner, self.theta, self.env.state, H)
-        
-        # Calcule et retourne le feature count de la trajectoire optimale
-        return self.feature_count_from_trajectory(best_trajectory)
+        # Return average feature counts across all starting positions
+        return total_phi / count
 
     ### best response ####
 
-    def _best_response_policy(self, H: int,eta: float = 0.5) -> List[Tuple[np.ndarray, str]]:
+    def _best_response_policy(self, H: int,eta : float) -> List[Tuple[np.ndarray, str]]:
         """Calcul de la meilleure réponse"""
         time_start = time.time()
         phi_theta = self.compute_phi_theta(H)
@@ -146,7 +163,7 @@ class HumanTeacher:
         time_start = time.time()
         for tau in valid_trajectories:
             
-            value = self.eval_BR(tau, eta, phi_theta)
+            value, sum_of_rewards, feature_dissimilarity = self.eval_BR(tau, eta, phi_theta)
             
             count += 1
             if count % 100000 == 0:
@@ -154,6 +171,7 @@ class HumanTeacher:
 
             if value > best_value:
                 best_value = value
+                print(f'Found better, Value: {value}, sum_of_rewards: {sum_of_rewards}, feature_dissimilarity: {feature_dissimilarity}')
                 best_response = tau
         
         print(f'Eval BR for {len(valid_trajectories)} trajectories took {time.time() - time_start} seconds')

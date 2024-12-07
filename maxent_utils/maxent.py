@@ -92,7 +92,6 @@ def expected_svf_from_policy(p_transition, p_initial, terminal, p_action, eps=1e
         `[state: Integer] -> svf: Float`.
     """
     n_states, _, n_actions = p_transition.shape
-    print(f'Calculating expected state visitation frequencies for {n_states} states')
 
     # 'fix' our transition probabilities to allow for convergence
     # we will _never_ leave any terminal state
@@ -107,7 +106,6 @@ def expected_svf_from_policy(p_transition, p_initial, terminal, p_action, eps=1e
 
     delta = np.inf
     while delta > eps:
-        print(f'Iteration, delta: {delta} > eps: {eps}')
         d_ = [p_transition[a].T.dot(p_action[:, a] * d) for a in range(n_actions)]
         d_ = p_initial + np.array(d_).sum(axis=0)
 
@@ -141,7 +139,6 @@ def local_action_probabilities(p_transition, terminal, reward):
     """
     
     n_states, _, n_actions = p_transition.shape
-    print(f'Calculating local action probabilities for {n_states} states')
 
     er = np.exp(reward)
     p = [np.array(p_transition[:, :, a]) for a in range(n_actions)]
@@ -235,9 +232,7 @@ def irl(p_transition, features, terminal, trajectories, optim, init, eps=1e-4, e
 
     # compute static properties from trajectories
     e_features = feature_expectation_from_trajectories(features, trajectories)
-    print(f'Calculated feature expectation: {e_features}')
     p_initial = initial_probabilities_from_trajectories(n_states, trajectories)
-    print(f'Calculated initial probabilities: {p_initial}')
 
     # basic gradient descent
     theta = init(n_features)
@@ -248,7 +243,6 @@ def irl(p_transition, features, terminal, trajectories, optim, init, eps=1e-4, e
     iteration = 0
     
     while delta > eps:
-        print(f'Iteration {iteration}, delta: {delta}')
         
         iteration += 1
         
@@ -463,5 +457,47 @@ def irl_causal(p_transition, features, terminal, trajectories, optim, init, disc
         optim.step(grad)
         delta = np.max(np.abs(theta_old - theta))
 
-    # re-compute per-state reward and return
-    return features.dot(theta)
+    return theta
+
+def compute_trajectory_kl_divergence(p_transition, features, theta_hat, theta_gt, terminal, 
+                                   p_initial, eps=1e-5):
+    """
+    Compute the KL-divergence between maximum-entropy trajectory distributions.
+    
+    Args:
+        p_transition: The transition probabilities of the MDP
+        features: The feature-matrix mapping states to features
+        theta_hat: The estimated reward parameters
+        theta_gt: The ground truth reward parameters
+        terminal: List of terminal states or terminal reward function
+        p_initial: Initial state distribution
+        causal: Whether to use causal entropy (True) or standard maximum entropy (False)
+        discount: Discount factor (only used if causal=True)
+        eps: Convergence threshold for SVF computation
+        
+    Returns:
+        The KL-divergence between the trajectory distributions
+    """
+    # Get rewards under both parameters
+    reward_hat = features.dot(theta_hat)
+    reward_gt = features.dot(theta_gt)
+
+    policy_hat = local_action_probabilities(p_transition, terminal, reward_hat)
+    policy_gt = local_action_probabilities(p_transition, terminal, reward_gt)
+    
+    # Compute state visitation frequencies
+    svf_hat = expected_svf_from_policy(p_transition, p_initial, terminal, policy_hat, eps)
+    
+    # Compute KL-divergence:
+    # KL(P_hat || P_gt) = E_P_hat[log(P_hat/P_gt)]
+    # For trajectory distributions, this involves summing over states and actions
+    kl = 0.0
+    n_states, _, n_actions = p_transition.shape
+    
+    for s in range(n_states):
+        if svf_hat[s] > 0:  # Only consider states that are visited
+            for a in range(n_actions):
+                if policy_hat[s,a] > 0:  # Avoid log(0)
+                    kl += svf_hat[s] * policy_hat[s,a] * np.log(policy_hat[s,a] / policy_gt[s,a])
+    
+    return kl

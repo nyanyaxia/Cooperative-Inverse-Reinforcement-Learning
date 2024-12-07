@@ -1,10 +1,25 @@
 from gridworld import GridWorld
 from maxent_wrapper import Trajectory
-from maxent_utils.maxent import irl
+from maxent_utils.maxent import irl_causal
 from maxent_wrapper import Optimizer, Initializer
 import numpy as np
 from typing import List, Tuple
 from valueiterationplanner import ValueIterationPlanner
+
+def get_valid_neighbors(state, grid_size):
+    """Get valid neighboring states (up, down, left, right)"""
+    x, y = state[0], state[1]
+    neighbors = []
+    
+    # Check all four directions
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]  # up, down, right, left
+    for dx, dy in directions:
+        new_x, new_y = x + dx, y + dy
+        # Check if new position is within grid bounds
+        if 0 <= new_x < grid_size and 0 <= new_y < grid_size:
+            neighbors.append((new_x, new_y))
+            
+    return neighbors
 
 class RobotLearner:
     def __init__(self, env: GridWorld):
@@ -22,34 +37,51 @@ class RobotLearner:
         p_transition = self.env.get_p_transition()
         # Setup features matrix
         features = self.env.get_feature_matrix()
+        print(f'Features matrix: {features.shape}')
         
-        # Define terminal states (none in this case)
+        
+        # Define terminal states 
         terminal_states = []
         for center in self.env.feature_centers:
             center_idx = int(center[0]) * self.env.size + int(center[1])
             terminal_states.append(center_idx)
+        """
+        final_state = trajectory_data[-1][0]  # Gets the state from the last (state, action) pair
+        terminal_state_idx = int(final_state[0]) * self.env.size + int(final_state[1])
+        terminal_states = [terminal_state_idx]
+        
+        #Add neighbours to help convergence
+        neighbors = get_valid_neighbors(final_state, self.env.size)
+        for neighbor in neighbors:
+            neighbor_idx = int(neighbor[0]) * self.env.size + int(neighbor[1])
+            terminal_states.append(neighbor_idx)
+        """
+            
+        print(f'Terminal states: {terminal_states}')
         
         # Setup optimization
         optim = Optimizer(learning_rate=0.01)
         init = Initializer(low=-1, high=1)
         
         # Run MaxEnt IRL
-        print(f'Running IRL')
-        self.estimated_theta = irl(
+        print(f'Running Causal IRL')
+        self.estimated_theta = irl_causal(
             p_transition=p_transition,
             features=features,
             terminal=terminal_states,
             trajectories=[trajectory],
             optim=optim,
             init=init,
+            discount=0.95,  # Add discount factor for stability
             eps=1e-4,
-            eps_esvf=1e-4,
+            eps_svf=1e-4,
+            eps_lap=1e-4,
         )
         print(f'Running finished. Estimated theta: {self.estimated_theta}')
     
-    def _policy(self, state: np.ndarray) -> str:
+    def _policy(self, state: np.ndarray, theta) -> str:
         """Robot's policy based on learned rewards"""
-        if self.estimated_theta is None:
+        if theta is None:
             return np.random.choice(['N', 'S', 'E', 'W'])
             
-        return self.planner.get_action(state, self.estimated_theta)
+        return self.planner.get_action(state, theta)

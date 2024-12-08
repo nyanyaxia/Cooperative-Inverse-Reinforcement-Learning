@@ -45,18 +45,7 @@ class RobotLearner:
         for center in self.env.feature_centers:
             center_idx = int(center[0]) * self.env.size + int(center[1])
             terminal_states.append(center_idx)
-        """
-        final_state = trajectory_data[-1][0]  # Gets the state from the last (state, action) pair
-        terminal_state_idx = int(final_state[0]) * self.env.size + int(final_state[1])
-        terminal_states = [terminal_state_idx]
-        
-        #Add neighbours to help convergence
-        neighbors = get_valid_neighbors(final_state, self.env.size)
-        for neighbor in neighbors:
-            neighbor_idx = int(neighbor[0]) * self.env.size + int(neighbor[1])
-            terminal_states.append(neighbor_idx)
-        """
-            
+
         print(f'Terminal states: {terminal_states}')
         
         # Setup optimization

@@ -171,7 +171,6 @@ class HumanTeacher:
 
             if value > best_value:
                 best_value = value
-                print(f'Found better, Value: {value}, sum_of_rewards: {sum_of_rewards}, feature_dissimilarity: {feature_dissimilarity}')
                 best_response = tau
         
         print(f'Eval BR for {len(valid_trajectories)} trajectories took {time.time() - time_start} seconds')

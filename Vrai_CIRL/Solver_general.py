@@ -2,7 +2,7 @@ import itertools
 import numpy as np
 from functools import lru_cache
 import matplotlib.pyplot as plt
-
+from visualize import visualize
  # Set a fixed seed for reproducibility
 
 ##########################################
@@ -117,6 +117,7 @@ class CIRLGame:
         s_index = np.random.choice(len(states), p=probs)
         s = states[s_index]
         x_init, θ_true = s  # True θ chosen once at start
+        print(f'θ_true {θ_true}')
 
         b = self.initial_belief.copy()
         trajectory=[(x_init, θ_true)]
@@ -146,6 +147,8 @@ class CIRLGame:
 
             a_R = best_action
             A_R_seq.append(a_R)
+            
+            visualize(X_seq, a_R, b, θ_true, robot=True)
 
             # Human action chosen based on θ_true
             max_vals = np.max([p.alpha_vector for p in alpha_vectors], axis=0)
@@ -164,6 +167,7 @@ class CIRLGame:
             a_H = q_values[0][0]
             A_H_seq.append(a_H)
 
+            visualize(X_seq, a_H, b, θ_true, robot=False)
             # Transition
             ps = [self.T(X_seq[-1],a_H,a_R,xp) for xp in self.X_space]
             ps = np.array(ps)
@@ -173,6 +177,7 @@ class CIRLGame:
             xp_index=np.random.choice(len(self.X_space),p=ps)
             x_prime=self.X_space[xp_index]
             X_seq.append(x_prime)
+            print(f'Robot action = {a_R}, Human action = {a_H}, Next state = {x_prime}')
 
             # Belief update as before, using a_H and next state x_prime
             # (No change in belief update logic)
@@ -192,7 +197,11 @@ class CIRLGame:
                 new_b[i_]=b[i_]*p_aH
             if new_b.sum()>0:
                 b=new_b/new_b.sum()
+            
 
+            
+            print(f"t={t}, belief = {b}, len(b)={len(b)}")
+                
             # Record reward at new state with θ_true
             rewards.append(self.R(x_prime, θ_true))
             trajectory.append((x_prime, θ_true))

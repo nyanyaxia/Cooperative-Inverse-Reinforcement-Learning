@@ -22,8 +22,8 @@ Theta_space=[(theta1, theta2) for theta1 in theta_space_uni for theta2 in theta_
 
 n_theta=len(Theta_space)
 initial_belief=[1/n_theta for i in range(n_theta)] # la distribution initiale de theta est a priori uniforme
-
-
+         
+    
 ####### Définition des fonctions de transition et de récompense #######
 
 def phi(x):
@@ -53,7 +53,8 @@ def R(x,theta):
 P0={((L//2,L//2),Theta_space[5]):1.0}
 
 ######## Run du jeu ########
-
+print(f'theta_space={Theta_space}')
+print(f'initial_belief={initial_belief}, len(initial_belief)={len(initial_belief)}')
 game=CIRLGame(X_space,Theta_space,A_H,A_R,T,R,gamma,P0,Horizon,initial_belief,verbose=True)
 alpha_vectors=game.solve()
 X_seq, A_H_seq, A_R_seq, rewards = game.forward_simulation(alpha_vectors)

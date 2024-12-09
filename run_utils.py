@@ -90,6 +90,10 @@ def plot_comparison_metrics(results, save_path):
     br_color = '#ff7f50'  # coral
     expert_color = '#4682b4'  # steelblue
     
+    # Helper function for SEM calculation
+    def compute_sem(data):
+        return np.std(data) / np.sqrt(len(data))
+    
     # Plot for num_features = 3
     ax1.set_title('num-features = 3')
     # Best response bars
@@ -98,13 +102,13 @@ def plot_comparison_metrics(results, save_path):
         np.mean(results['best_response_3']['kl_divergence']),
         np.mean(results['best_response_3']['l2_norms'])
     ]
-    br_stds_3 = [
-        np.std(results['best_response_3']['regret']),
-        np.std(results['best_response_3']['kl_divergence']),
-        np.std(results['best_response_3']['l2_norms'])
+    br_sems_3 = [
+        compute_sem(results['best_response_3']['regret']),
+        compute_sem(results['best_response_3']['kl_divergence']),
+        compute_sem(results['best_response_3']['l2_norms'])
     ]
-    ax1.bar(indices - bar_width/2, br_means_3, bar_width, 
-            yerr=br_stds_3, label='br', color=br_color,
+    ax1.bar(indices - bar_width/2, br_means_3, bar_width,
+            yerr=br_sems_3, label='br', color=br_color,
             capsize=5, alpha=0.7)
     
     # Expert bars
@@ -113,13 +117,13 @@ def plot_comparison_metrics(results, save_path):
         np.mean(results['expert_3']['kl_divergence']),
         np.mean(results['expert_3']['l2_norms'])
     ]
-    expert_stds_3 = [
-        np.std(results['expert_3']['regret']),
-        np.std(results['expert_3']['kl_divergence']),
-        np.std(results['expert_3']['l2_norms'])
+    expert_sems_3 = [
+        compute_sem(results['expert_3']['regret']),
+        compute_sem(results['expert_3']['kl_divergence']),
+        compute_sem(results['expert_3']['l2_norms'])
     ]
     ax1.bar(indices + bar_width/2, expert_means_3, bar_width,
-            yerr=expert_stds_3, label='πE', color=expert_color,
+            yerr=expert_sems_3, label='πE', color=expert_color,
             capsize=5, alpha=0.7)
     
     # Plot for num_features = 10
@@ -130,13 +134,13 @@ def plot_comparison_metrics(results, save_path):
         np.mean(results['best_response_10']['kl_divergence']),
         np.mean(results['best_response_10']['l2_norms'])
     ]
-    br_stds_10 = [
-        np.std(results['best_response_10']['regret']),
-        np.std(results['best_response_10']['kl_divergence']),
-        np.std(results['best_response_10']['l2_norms'])
+    br_sems_10 = [
+        compute_sem(results['best_response_10']['regret']),
+        compute_sem(results['best_response_10']['kl_divergence']),
+        compute_sem(results['best_response_10']['l2_norms'])
     ]
     ax2.bar(indices - bar_width/2, br_means_10, bar_width,
-            yerr=br_stds_10, label='br', color=br_color,
+            yerr=br_sems_10, label='br', color=br_color,
             capsize=5, alpha=0.7)
     
     # Expert bars
@@ -145,13 +149,13 @@ def plot_comparison_metrics(results, save_path):
         np.mean(results['expert_10']['kl_divergence']),
         np.mean(results['expert_10']['l2_norms'])
     ]
-    expert_stds_10 = [
-        np.std(results['expert_10']['regret']),
-        np.std(results['expert_10']['kl_divergence']),
-        np.std(results['expert_10']['l2_norms'])
+    expert_sems_10 = [
+        compute_sem(results['expert_10']['regret']),
+        compute_sem(results['expert_10']['kl_divergence']),
+        compute_sem(results['expert_10']['l2_norms'])
     ]
     ax2.bar(indices + bar_width/2, expert_means_10, bar_width,
-            yerr=expert_stds_10, label='πE', color=expert_color,
+            yerr=expert_sems_10, label='πE', color=expert_color,
             capsize=5, alpha=0.7)
     
     # Customize both plots
@@ -162,9 +166,9 @@ def plot_comparison_metrics(results, save_path):
         ax.grid(True, alpha=0.3)
         
         # Set y-axis limits based on data
-        ymin = min(min(br_means_3), min(expert_means_3), 
+        ymin = min(min(br_means_3), min(expert_means_3),
                   min(br_means_10), min(expert_means_10))
-        ymax = max(max(br_means_3), max(expert_means_3), 
+        ymax = max(max(br_means_3), max(expert_means_3),
                   max(br_means_10), max(expert_means_10))
         ax.set_ylim(ymin - abs(ymin)*0.2, ymax + abs(ymax)*0.2)
     

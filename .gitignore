@@ -2,4 +2,4 @@ __pycache__/
 *.py[cod]
 *$py.class
 maxent_utils/__pycache__/
-results/
+src/apprenticeship_learning/results/

@@ -8,10 +8,10 @@ from gridworld import GridWorld
 from human import HumanTeacher
 from robot import RobotLearner
 from maxent_utils.maxent import compute_trajectory_kl_divergence, initial_probabilities_from_trajectories
-from maxent_wrapper import Trajectory
+from maxent_utils.maxent_wrapper import Trajectory
 
 
-def run_experiment(results_path, n_trials: int = 50, grid_size: int = 10, horizon: int = 16):
+def run_experiment(results_path, n_trials: int = 2, grid_size: int = 10, horizon: int = 16):
     """Run the complete experiment"""
     results = {
         'expert_3': {'l2_norms': [], 'regret': [], 'kl_divergence': []},

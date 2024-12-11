@@ -52,7 +52,6 @@ def initial_probabilities_from_trajectories(n_states, trajectories):
         The probability of a state being a starting-state as map
         `[state: Integer] -> probability: Float`.
     """
-    print(f'Number of states: {n_states}')
     p = np.zeros(n_states)
 
     for t in trajectories:
@@ -489,7 +488,6 @@ def compute_trajectory_kl_divergence(p_transition, features, theta_hat, theta_gt
     svf_hat = expected_svf_from_policy(p_transition, p_initial, terminal, policy_hat, eps)
     svf_hat = svf_hat / np.sum(svf_hat)
     
-    print(f'svf hat sum {np.sum(svf_hat)}')
     # Compute KL-divergence:
     # KL(P_hat || P_gt) = E_P_hat[log(P_hat/P_gt)]
     # For trajectory distributions, this involves summing over states and actions
@@ -501,6 +499,5 @@ def compute_trajectory_kl_divergence(p_transition, features, theta_hat, theta_gt
             for a in range(n_actions):
                 if policy_hat[s,a] > 0:  # Avoid log(0)
                     kl += svf_hat[s] * policy_hat[s,a] * np.log(policy_hat[s,a] / policy_gt[s,a])
-                    print(f'KL: {kl}')
     
     return kl

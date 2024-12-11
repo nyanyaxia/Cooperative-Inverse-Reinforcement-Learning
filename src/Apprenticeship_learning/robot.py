@@ -1,7 +1,7 @@
 from gridworld import GridWorld
-from maxent_wrapper import Trajectory
+from maxent_utils.maxent_wrapper import Trajectory
 from maxent_utils.maxent import irl_causal
-from maxent_wrapper import Optimizer, Initializer
+from maxent_utils.maxent_wrapper import Optimizer, Initializer
 import numpy as np
 from typing import List, Tuple
 from valueiterationplanner import ValueIterationPlanner

@@ -3,7 +3,7 @@ import numpy as np
 import time
 import os
 
-def create_timestamped_dir(base_dir="results"):
+def create_timestamped_dir(base_dir="src/apprenticeship_learning/results"):
     """
     Create a timestamped directory to store results.
     """

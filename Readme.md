@@ -1,6 +1,6 @@
 ## Cooperative Inverse Reinforcement Learning
 
-This repository, part of the work for Ecole Polytechnique's **Collaborative and Reliable Learning** class, aims at studying Cooperative Inverse Reinforcement Learning (CIRL). 
+This repository, part of the work for Ecole Polytechnique's **Collaborative and Reliable Learning** class, aims at studying Cooperative Inverse Reinforcement Learning (CIRL). See [our presentation](CIRL_presentation.pptx)
 
 It proposes a first implementation based on **[Cooperative Inverse Reinforcement Learning (Hadfield-Menell et. al.) (Neurips 2016)](https://papers.nips.cc/paper_files/paper/2016/hash/c3395dd46c34fa7fd8d729d8cf88b7a8-Abstract.html)** reproducing its turn based apprenticeship-learning framework and results on a robot gridworld. 
 

@@ -41,3 +41,5 @@ Results are saved in the `results_path` directory. The number of total trials `n
 
 ## True CIRL with Efficient Bellman update
 
+Implementing the general efficient bellman update framework which can be applied to any CIRL game. Makes CIRL truly turn based at each step. 
+

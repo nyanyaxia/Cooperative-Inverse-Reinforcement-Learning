@@ -1,0 +1,23 @@
+# config.yaml
+grid_size: 4
+num_features: 2
+centroids:
+  - [0, 1]
+  - [1, 4]
+sigmas: [0.5, 0.5, 0.5, 0.5]
+num_theta_values: 2
+gamma: 0.9
+horizon: 4
+
+human_actions:
+  - [0, 0]
+  - [-1, 0]
+  - [1, 0]
+  - [0, -1]
+  - [0, 1]
+robot_actions:
+  - [0, 0]
+  - [-1, 0]
+  - [1, 0]
+  - [0, -1]
+  - [0, 1]

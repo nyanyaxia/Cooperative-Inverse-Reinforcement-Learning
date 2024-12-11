@@ -1,50 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import yaml
+import os
 
-####### Parameters of the problem #######
-L=4# taille de la grille
-N_phi=2 # nombre de features
-centroids=np.array([[0,1],[1,4]]) # les cenroides de la feature function
-sigmas=np.array([0.5,0.5,0.5,0.5]) # les sigmas de la feature function
-m=2 # nombre de valeurs de theta possibles -1
-gamma=0.9
-Horizon=4
+from robot_functions import R
 
-####### Définition des ensmbles######
-A_H=[(0,0), (-1, 0), (1, 0), (0, -1), (0, 1)] # les actions de l'humain
-A_R=[(0,0), (-1, 0), (1, 0), (0, -1), (0, 1)] # les actions du robot
-X_space=[(i,j) for i in range(-1,L+1) for j in range(-1,L+1)] # les états, on crée des états fictifs pour les bords pour rendre les zones interidtes
-theta_space_uni=[-1+2*i/m for i in range(m+1)] # les valeurs de theta
-Theta_space=[(theta1, theta2) for theta1 in theta_space_uni for theta2 in theta_space_uni] # les valeurs de theta
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, "config.yaml")
 
-n_theta=len(Theta_space)
-initial_belief=[1/n_theta for i in range(n_theta)] # la distribution initiale de theta est a priori uniforme
-
-
-def phi(x):
-    """
-    Fonction de features
-    """
-    return np.array([np.exp(-np.linalg.norm(np.array(x)-c)**2/sigma) for c,sigma in zip(centroids,sigmas)])
-
-
-def T(x,a_H,a_R,xp):
-    """
-    Fonction de transition
-    """
-    new_x = tuple(np.array(x)+np.array(a_H)+np.array(a_R))
-    return 1.0 if new_x==xp else 0.0
-
-def R(x,theta):
-    """
-    Fonction de récompense
-    """
-    theta1=np.array(theta)
-    if x[0]==-1 or x[0]==L or x[1]==-1 or x[1]==L:
-        return -1000
-    else:
-        return np.dot(phi(x),theta1)
-         
+with open(config_path, "r") as file:
+    config = yaml.safe_load(file)
+    
+centroids = np.array(config["centroids"])
+L = config["grid_size"]
+m = config["num_theta_values"]
+theta_space_uni = [-1 + 2 * i / m for i in range(m + 1)]
+Theta_space = [
+    (theta1, theta2) for theta1 in theta_space_uni for theta2 in theta_space_uni
+]
 
 def visualize(X_seq, a, b, true_theta, robot=True):
     # Create reward grid

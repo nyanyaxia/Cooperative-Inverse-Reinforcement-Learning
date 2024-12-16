@@ -3,7 +3,7 @@ import numpy as np
 from functools import lru_cache
 import matplotlib.pyplot as plt
 from visualize import visualize
- # Set a fixed seed for reproducibility
+# Set a fixed seed for reproducibility
 
 ##########################################
 # CIRL with Belief States over Theta
@@ -48,25 +48,25 @@ class CIRLGame:
     def alpha_backup(self, depth, alpha_vectors_next):
         idx_map = {s:i for i,s in enumerate(self.S_space)}
         if len(alpha_vectors_next)==0:
-            def V_next(xp,thetap):
+            def V_next(xp, thetap):
                 return 0.0
         else:
             max_vals = np.max([p.alpha_vector for p in alpha_vectors_next], axis=0)
-            def V_next(xp,thetap):
-                return max_vals[idx_map[(xp,thetap)]]
+            def V_next(xp, thetap):
+                return max_vals[idx_map[(xp, thetap)]]
 
         new_alpha_vectors = []
         for a_R in self.A_R:
             alpha_array = np.zeros(len(self.S_space))
-            for i,(x,θ) in enumerate(self.S_space):
+            for i,(x, theta) in enumerate(self.S_space):
                 q_values = []
                 for a_H in self.A_H:
                     val=0.0
                     for x_prime in self.X_space:
-                        p = self.T(x,a_H,a_R,x_prime)
+                        p = self.T(x, a_H, a_R, x_prime)
                         if p>0:
-                            val += p*(self.R(x_prime,θ)+self.gamma*V_next(x_prime,θ))
-                    q_values.append((a_H,val))
+                            val += p*(self.R(x_prime, theta) + self.gamma*V_next(x_prime, theta))
+                    q_values.append((a_H, val))
                 q_values.sort(key=lambda x:x[1], reverse=True)
                 alpha_array[i] = q_values[0][1]
             new_alpha_vectors.append(Plan(a_R, alpha_array))
@@ -106,8 +106,8 @@ class CIRLGame:
         vals = []
         for p in alpha_vectors:
             val=0.0
-            for i,θ in enumerate(self.theta_space):
-                val+=b[i]*p.alpha_vector[idx_map[(x,θ)]]
+            for i, theta in enumerate(self.theta_space):
+                val+=b[i]*p.alpha_vector[idx_map[(x, theta)]]
             vals.append(val)
         return max(vals) if len(vals)>0 else 0.0
 
@@ -116,28 +116,27 @@ class CIRLGame:
         probs = list(self.P0.values())
         s_index = np.random.choice(len(states), p=probs)
         s = states[s_index]
-        x_init, θ_true = s  # True θ chosen once at start
-        print(f'θ_true {θ_true}')
+        x_init, theta_true = s
+        print(f'theta_true {theta_true}')
 
         b = self.initial_belief.copy()
-        trajectory=[(x_init, θ_true)]
+        trajectory=[(x_init, theta_true)]
         A_R_seq=[]
         A_H_seq=[]
         X_seq=[x_init]
-        rewards = [self.R(x_init, θ_true)]  # use θ_true
+        rewards = [self.R(x_init, theta_true)]
 
         idx_map = {st:i for i,st in enumerate(self.S_space)}
 
         for t in range(self.Horizon):
-            # pick best a_R
             best_val = -np.inf
             best_action = None
             for p in alpha_vectors:
                 if p.a_R is None:
                     continue
                 val=0.0
-                for i_,θ_ in enumerate(self.theta_space):
-                    val+=b[i_]*p.alpha_vector[idx_map[(X_seq[-1],θ_)]]
+                for i_, theta_ in enumerate(self.theta_space):
+                    val+=b[i_]*p.alpha_vector[idx_map[(X_seq[-1], theta_)]]
                 if val>best_val:
                     best_val=val
                     best_action=p.a_R
@@ -148,12 +147,11 @@ class CIRLGame:
             a_R = best_action
             A_R_seq.append(a_R)
             
-            visualize(X_seq, a_R, b, θ_true, robot=True)
+            visualize(X_seq, a_R, b, theta_true, robot=True)
 
-            # Human action chosen based on θ_true
             max_vals = np.max([p.alpha_vector for p in alpha_vectors], axis=0)
-            def V_next(xp,thetap):
-                return max_vals[idx_map[(xp,thetap)]]
+            def V_next(xp, thetap):
+                return max_vals[idx_map[(xp, thetap)]]
 
             q_values=[]
             for a_H_cand in self.A_H:
@@ -161,15 +159,15 @@ class CIRLGame:
                 for xp in self.X_space:
                     p_ = self.T(X_seq[-1], a_H_cand, a_R, xp)
                     if p_>0:
-                        val += p_*(self.R(xp, θ_true) + self.gamma*V_next(xp, θ_true))
+                        val += p_*(self.R(xp, theta_true) + self.gamma*V_next(xp, theta_true))
                 q_values.append((a_H_cand,val))
             q_values.sort(key=lambda x:x[1], reverse=True)
             a_H = q_values[0][0]
             A_H_seq.append(a_H)
 
-            visualize(X_seq, a_H, b, θ_true, robot=False)
-            # Transition
-            ps = [self.T(X_seq[-1],a_H,a_R,xp) for xp in self.X_space]
+            visualize(X_seq, a_H, b, theta_true, robot=False)
+
+            ps = [self.T(X_seq[-1], a_H, a_R, xp) for xp in self.X_space]
             ps = np.array(ps)
             if ps.sum()==0:
                 break
@@ -179,31 +177,26 @@ class CIRLGame:
             X_seq.append(x_prime)
             print(f'Robot action = {a_R}, Human action = {a_H}, Next state = {x_prime}')
 
-            # Belief update as before, using a_H and next state x_prime
-            # (No change in belief update logic)
             new_b = np.zeros_like(b)
-            for i_,θ_ in enumerate(self.theta_space):
+            for i_, theta_ in enumerate(self.theta_space):
                 qv=[]
                 for aH_c in self.A_H:
                     val=0.0
                     for xpp in self.X_space:
-                        p__ = self.T(X_seq[-2],aH_c,a_R,xpp)
+                        p__ = self.T(X_seq[-2], aH_c, a_R, xpp)
                         if p__>0:
-                            val+=p__*(self.R(xpp,θ_)+self.gamma*V_next(xpp,θ_))
+                            val+=p__*(self.R(xpp, theta_) + self.gamma*V_next(xpp, theta_))
                     qv.append((aH_c,val))
                 qv.sort(key=lambda xx:xx[1], reverse=True)
-                best_aH_θ = qv[0][0]
-                p_aH = 1.0 if best_aH_θ==a_H else 0.0
+                best_aH_theta = qv[0][0]
+                p_aH = 1.0 if best_aH_theta==a_H else 0.0
                 new_b[i_]=b[i_]*p_aH
             if new_b.sum()>0:
                 b=new_b/new_b.sum()
             
-
-            
             print(f"t={t}, belief = {b}, len(b)={len(b)}")
                 
-            # Record reward at new state with θ_true
-            rewards.append(self.R(x_prime, θ_true))
-            trajectory.append((x_prime, θ_true))
+            rewards.append(self.R(x_prime, theta_true))
+            trajectory.append((x_prime, theta_true))
 
         return X_seq, A_H_seq, A_R_seq, rewards

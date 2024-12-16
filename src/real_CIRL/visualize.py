@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import yaml
 import os
-
+import itertools
 from robot_functions import R
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,10 +14,11 @@ with open(config_path, "r") as file:
 centroids = np.array(config["centroids"])
 L = config["grid_size"]
 m = config["num_theta_values"]
+N_phi = config["num_features"]
 theta_space_uni = [-1 + 2 * i / m for i in range(m + 1)]
-Theta_space = [
-    (theta1, theta2) for theta1 in theta_space_uni for theta2 in theta_space_uni
-]
+Theta_space=list(itertools.product(theta_space_uni, repeat=N_phi))
+n_theta = len(Theta_space)
+initial_belief = [1 / n_theta for _ in range(n_theta)]
 
 def visualize(X_seq, a, b, true_theta, robot=True):
     # Create reward grid

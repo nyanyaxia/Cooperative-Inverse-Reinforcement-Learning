@@ -51,8 +51,6 @@ def run_experiment(results_path, n_trials: int = 2, grid_size: int = 10, horizon
                     print(f"Current trial iteration: {trial}")
                     visualize_policies(env, true_theta, expert_trajectory, robot_expert_theta, br_trajectory, robot_br_theta, results_dir, trial)
                 
-                # Theta sign correction 
-                
                 # Deployment phase
                 initial_state = env.reset(random_state=True)
                 reward_estimated_theta = 0

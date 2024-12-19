@@ -48,6 +48,10 @@ class GridWorld:
         else:
             self.state = np.array([self.size // 2, self.size // 2])
         return self.state.copy()
+    
+    # Helper function to map (x, y) to a state index
+    def state_to_index(self, state):
+        return state[0] + state[1] * self.size
 
     def get_p_transition(self):
         """Return transition probabilities for the environment"""
@@ -55,22 +59,18 @@ class GridWorld:
         n_actions = len(self.actions)  # N, S, E, W, NOOP
         p_transition = np.zeros((n_states, n_states, n_actions))
 
-        # Helper function to map (x, y) to a state index
-        def state_to_index(state):
-            return state[0] + state[1] * self.size
-
         # Iterate over all states
         for x in range(self.size):
             for y in range(self.size):
                 current_state = np.array([x, y])
-                current_index = state_to_index(current_state)
+                current_index = self.state_to_index(current_state)
 
                 # Iterate over all actions
                 for action_index, (action, delta) in enumerate(self.actions.items()):
                     next_state = current_state + delta
                     # Clip next_state to ensure it's within bounds
                     next_state = np.clip(next_state, 0, self.size - 1)
-                    next_index = state_to_index(next_state)
+                    next_index = self.state_to_index(next_state)
 
                     # Deterministic transition
                     p_transition[current_index, next_index, action_index] = 1.0
@@ -81,8 +81,10 @@ class GridWorld:
         # Setup features matrix
         n_states = self.size * self.size
         features = np.zeros((n_states, self.n_features))
-        for s in range(n_states):
-            row, col = s // self.size, s % self.size
-            state = np.array([row, col])
-            features[s] = self.get_features(state)
+        for x in range(self.size):
+            for y in range(self.size):
+                state = np.array([x, y])
+                state_idx = self.state_to_index(state)
+                features[state_idx] = self.get_features(state)
+                
         return features

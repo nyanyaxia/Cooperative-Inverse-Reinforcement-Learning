@@ -49,7 +49,7 @@ class RobotLearner:
         print(f'Terminal states: {terminal_states}')
         
         # Setup optimization
-        optim = Optimizer(learning_rate=0.01)
+        optim = Optimizer(learning_rate=0.0001)
         init = Initializer(low=-1, high=1)
         
         # Run MaxEnt IRL
@@ -62,7 +62,7 @@ class RobotLearner:
             optim=optim,
             init=init,
             discount=0.95,  # Add discount factor for stability
-            eps=1e-4,
+            eps=1e-3,
             eps_svf=1e-4,
             eps_lap=1e-4,
         )

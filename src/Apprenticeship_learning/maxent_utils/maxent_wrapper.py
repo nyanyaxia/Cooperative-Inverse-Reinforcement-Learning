@@ -40,15 +40,22 @@ class Trajectory:
 
 class Optimizer:
     """Simple gradient descent optimizer for maxent package"""
-    def __init__(self, learning_rate=0.01):
+    def __init__(self, learning_rate=0.0001):
         self.learning_rate = learning_rate
         self.parameters = None
         
     def reset(self, parameters):
-        self.parameters = parameters.copy()  # Make copy to avoid reference issues
+        """Initialize/reset the parameters to optimize"""
+        self.parameters = parameters.copy()
         
     def step(self, gradient):
+        """Perform one optimization step using gradient descent"""
+        if self.parameters is None:
+            raise ValueError("Parameters not initialized. Call reset() first.")
+        
+        # Update parameters in-place
         self.parameters += self.learning_rate * gradient
+        return self.parameters 
 
 class Initializer:
     """Uniform random initializer for maxent package"""

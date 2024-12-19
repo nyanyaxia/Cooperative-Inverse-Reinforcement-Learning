@@ -389,7 +389,7 @@ def compute_expected_causal_svf(p_transition, p_initial, terminal, reward, disco
 
 
 def irl_causal(p_transition, features, terminal, trajectories, optim, init, discount,
-               eps=1e-4, eps_svf=1e-5, eps_lap=1e-5):
+               eps=1e-3, eps_svf=1e-5, eps_lap=1e-5):
     """
     Compute the reward signal given the demonstration trajectories using the
     maximum causal entropy inverse reinforcement learning algorithm proposed
@@ -454,7 +454,7 @@ def irl_causal(p_transition, features, terminal, trajectories, optim, init, disc
         grad = e_features - features.T.dot(e_svf)
 
         # perform optimization step and compute delta for convergence
-        optim.step(grad)
+        theta = optim.step(grad)
         delta = np.max(np.abs(theta_old - theta))
 
     return theta

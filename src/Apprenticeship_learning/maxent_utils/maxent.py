@@ -256,7 +256,7 @@ def irl(p_transition, features, terminal, trajectories, optim, init, eps=1e-4, e
         grad = e_features - features.T.dot(e_svf)
 
         # perform optimization step and compute delta for convergence
-        optim.step(grad)
+        theta = optim.step(grad)
         delta = np.max(np.abs(theta_old - theta))
             
 

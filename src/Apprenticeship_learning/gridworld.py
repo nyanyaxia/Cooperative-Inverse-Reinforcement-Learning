@@ -51,7 +51,7 @@ class GridWorld:
     
     # Helper function to map (x, y) to a state index
     def state_to_index(self, state):
-        return state[0] + state[1] * self.size
+        return state[0] * self.size + state[1] 
 
     def get_p_transition(self):
         """Return transition probabilities for the environment"""
